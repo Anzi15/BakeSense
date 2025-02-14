@@ -22,13 +22,22 @@ const StandardLayout = ({ children }) => {
     return () => unsubscribe();
   }, [navigate]);
 
+  const logOut = async () => {
+    try {
+      await auth.signOut();
+      navigate("/login"); // Redirect to login after logout
+    } catch (error) {
+      console.error("Logout Error:", error);
+    }
+  };
+
   if (loading) return <div className="h-screen flex justify-center items-center">Loading...</div>;
 
   return (
     <div className="flex h-screen">
       <Sidebar />
       <div className="flex-1 bg-gray-100 overflow-auto sm:pl-64">
-        <Navbar />
+        <Navbar logOut={logOut} />
         <div className="p-4">{children}</div>
       </div>
     </div>
