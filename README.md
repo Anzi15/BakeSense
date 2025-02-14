@@ -1,70 +1,159 @@
-# Getting Started with Create React App
+# Bakesene Desktop
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Bakesene Desktop is a desktop application built using **Electron.js, React, and Firebase**. This guide explains how to clone, set up, develop, and build the project.
 
-## Available Scripts
+---
+## 🚀 Features
+- Offline support
+- React-based UI
+- Firebase integration
+- Electron-powered desktop experience
 
-In the project directory, you can run:
+---
+## 📥 Clone the Repository
+To get started, clone this repository using:
+```sh
+git clone https://github.com/yourusername/bakesene-desktop.git
+cd bakesene-desktop
+```
 
-### `npm start`
+---
+## 🛠 Installation
+Ensure you have **Node.js** installed (Recommended: Node.js 18+). Then, install the dependencies:
+```sh
+npm install --force
+```
+> **Note:** The `--force` flag is used to resolve potential dependency issues.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+If you encounter any vulnerabilities, you can try fixing them with:
+```sh
+npm audit fix --force
+```
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+---
+## 🔧 Run in Development Mode
+To start the development environment, run:
+```sh
+npm start
+```
+This will:
+- Start the React development server on `http://localhost:3000`
+- Launch the Electron app once the React app is ready
 
-### `npm test`
+If you encounter errors related to missing dependencies, install them manually:
+```sh
+npm install concurrently wait-on --save-dev
+```
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+Here’s the **Git Collaboration Workflow** section added to your README:  
 
-### `npm run build`
+---
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## 🤝 Git Collaboration Workflow  
+If you're collaborating on this project with a team, follow this workflow to ensure smooth development without merge conflicts.  
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### 1️⃣ **Clone the Repository (First-Time Setup)**  
+If you haven't already cloned the repository, do so with:  
+```sh
+git clone https://github.com/yourusername/bakesene-desktop.git
+cd bakesene-desktop
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### 2️⃣ **Create a New Feature Branch**  
+Before making changes, create a new branch for your feature:  
+```sh
+git checkout -b feature-branch-name
+```
+> **Example:** If working on layout updates, name it `feature-layout`.
 
-### `npm run eject`
+### 3️⃣ **Make Changes and Commit**  
+After making changes, commit them:  
+```sh
+git add .
+git commit -m "Added new feature"
+```
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+### 4️⃣ **Push Your Branch to GitHub**  
+Push your changes to the remote repository:  
+```sh
+git push origin feature-branch-name
+```
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+### 5️⃣ **Create a Pull Request (PR)**  
+1. Go to the GitHub repository.  
+2. Click **Compare & pull request**.  
+3. Add a description of your changes and submit the PR.  
+4. Ask a teammate to review before merging.  
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+### 6️⃣ **Merge the PR into `main`**  
+Once the PR is approved:  
+- Click **Merge Pull Request** on GitHub.  
+- Delete the `feature-branch-name` after merging.  
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+### 7️⃣ **Sync the Latest Code**  
+After merging, ensure your local repo is up to date:  
+```sh
+git checkout main
+git pull origin main
+git branch -d feature-branch-name
+```
+Then, start working on a new feature:  
+```sh
+git checkout -b feature-next-task
+```
 
-## Learn More
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+---
+## 🏗 Build for Production
+To generate a production build:
+```sh
+npm run build
+```
+This will:
+- Create an optimized production build of the React app inside the `build/` folder
+- Package the Electron app
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+If you want to create a distributable package (Windows `.exe`, macOS `.dmg`, Linux `.AppImage`), run:
+```sh
+npm run dist
+```
+This uses `electron-builder` to create installers for different platforms.
 
-### Code Splitting
+---
+## 🔍 Troubleshooting
+### "Electron is not recognized" Error
+If Electron is missing, install it manually:
+```sh
+npm install electron --save-dev
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+### "concurrently is not recognized" Error
+If `concurrently` is missing, install it manually:
+```sh
+npm install concurrently --save-dev
+```
 
-### Analyzing the Bundle Size
+### "wait-on is not recognized" Error
+If `wait-on` is missing, install it manually:
+```sh
+npm install wait-on --save-dev
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+---
+## 📜 License
+This project is licensed under the **MIT License**.
 
-### Making a Progressive Web App
+---
+## 💡 Contribution
+If you'd like to contribute, feel free to submit a pull request!
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+---
+## 📞 Contact
+For any questions or support, reach out at **your-email@example.com**.
 
-### Advanced Configuration
+---
+### 🔗 Useful Links
+- [Electron Documentation](https://www.electronjs.org/docs)
+- [React Documentation](https://react.dev)
+- [Firebase Documentation](https://firebase.google.com/docs)
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
