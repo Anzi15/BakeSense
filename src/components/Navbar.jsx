@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
 
-const Navbar = () => {
+const Navbar = ({logout}) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
 
@@ -68,7 +68,7 @@ const Navbar = () => {
                   </li>
                   <li>
                     <a
-                      href="/logout"
+                      onClick={logout()}
                       className="block px-4 py-2 text-red-500 hover:bg-gray-100 dark:hover:bg-gray-700"
                     >
                       Logout
