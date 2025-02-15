@@ -8,32 +8,41 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Step 1: Load user from localStorage first
+    const savedUser = JSON.parse(localStorage.getItem("savedUser"));
+    if (savedUser) {
+      setUser(savedUser); // Set user immediately for offline persistence
+      setLoading(false);
+    }
+  
+    // Step 2: Subscribe to Firebase auth changes
     const unsubscribe = auth.onAuthStateChanged((firebaseUser) => {
       if (firebaseUser) {
-        // Assign role based on email
-        const isFactoryUser = firebaseUser?.email === "factory@sukkurbakers.com.pk";
-
-        setUser({
-          email: firebaseUser?.email,
-          role: isFactoryUser ? "factory" : "user", // Default role is "user"
+        const isFactoryUser = firebaseUser.email === "factory@sukkurbakers.com.pk";
+  
+        const authenticatedUser = {
+          email: firebaseUser.email,
+          role: isFactoryUser ? "factory" : "user",
           label: isFactoryUser ? "Factory User" : "Regular User",
-        });
-      } else if (!navigator.onLine) {
-        // Check offline users
-        const savedUsers = JSON.parse(localStorage.getItem("savedUsers")) || {};
-        const lastUser = Object.values(savedUsers)[0];
-
-        if (lastUser) {
-          setUser(lastUser);
-        }
+        };
+  
+        setUser(authenticatedUser);
+        localStorage.setItem("savedUser", JSON.stringify(authenticatedUser)); // Persist login state
       } else {
-        setUser(null);
+        // Only clear localStorage if explicitly logging out
+        if (navigator.onLine) {
+          setUser(null);
+          localStorage.removeItem("savedUser");
+        }
       }
+  
       setLoading(false);
     });
-
+  
     return () => unsubscribe();
   }, []);
+  
+  
 
   return (
     <AuthContext.Provider value={{ user, setUser, loading }}>

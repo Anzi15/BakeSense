@@ -42,32 +42,48 @@ const Login = () => {
       showToast("⚠️ Please select a user and enter a password!", "error");
       return;
     }
-
+  
     setLoading(true);
-
+  
     try {
+      let newUser = null;
+  
       // Check if online
       if (navigator.onLine) {
         const userCredential = await signInWithEmailAndPassword(auth, selectedUser.email, password);
-        const newUser = { email: userCredential.user.email, label: selectedUser.label };
-        setUser(newUser);
-        showToast(`✅ Welcome, ${selectedUser.label}!`);
-        navigate("/");
+        newUser = {
+          email: userCredential.user.email,
+          role: selectedUser.email === "factory@sukkurbakers.com.pk" ? "factory" : "user",
+          label: selectedUser.label,
+        };
       } else {
+        // Handle offline login
         if (localUsers[selectedUser.email] === password) {
-          setUser({ email: selectedUser.email, label: selectedUser.label });
+          newUser = {
+            email: selectedUser.email,
+            role: selectedUser.email === "factory@sukkurbakers.com.pk" ? "factory" : "user", // Custom role for offline mode
+            label: selectedUser.label,
+          };
           showToast(`✅ Welcome, ${selectedUser.label}! (Offline Mode)`);
-          navigate("/");
         } else {
           showToast("❌ Incorrect password! (Offline Mode)", "error");
+          return;
         }
       }
+  
+      // Save to context & local storage
+      setUser(newUser);
+      localStorage.setItem("savedUser", JSON.stringify(newUser));
+  
+      showToast(`✅ Welcome, ${newUser.label}!`);
+      navigate("/");
     } catch (error) {
       showToast(error.message, "error");
     }
-
+  
     setLoading(false);
   };
+  
 
   return (
     <main className="bg-[#fafbfc] p-4 flex flex-col items-center justify-center min-h-screen">
