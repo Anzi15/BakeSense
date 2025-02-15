@@ -54,7 +54,6 @@ const Login = () => {
         showToast(`✅ Welcome, ${selectedUser.label}!`);
         navigate("/");
       } else {
-        // Offline authentication
         if (localUsers[selectedUser.email] === password) {
           setUser({ email: selectedUser.email, label: selectedUser.label });
           showToast(`✅ Welcome, ${selectedUser.label}! (Offline Mode)`);
@@ -73,15 +72,15 @@ const Login = () => {
   return (
     <main className="bg-[#fafbfc] p-4 flex flex-col items-center justify-center min-h-screen">
       <h2 className="text-5xl font-extrabold mb-8">Login</h2>
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-4 w-[80%]">
         {users.map((user) => (
-          <button
+          <div
             key={user.email}
-            className="bg-blue-500 text-white px-6 py-4 rounded-lg shadow-md text-lg font-semibold transition-transform hover:scale-105"
+            className="bg-[#bdc3c7] text-white text-5xl px-6 py-4 w-full  aspect-video rounded-lg shadow-md flex justify-center items-center font-semibold transition-transform hover:scale-105"
             onClick={() => setSelectedUser(user)}
           >
             {user.label}
-          </button>
+          </div>
         ))}
       </div>
 
