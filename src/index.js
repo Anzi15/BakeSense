@@ -5,6 +5,7 @@ import "./index.css";
 import App from "./App";
 import Login from "./pages/Login.jsx"; // Assuming Login page exists
 import StandardLayout from "./layouts/StandardLayout";
+import { AuthProvider } from "./hooks/AuthContext.js";
 
 const LayoutWrapper = ({ children }) => {
   const location = useLocation();
@@ -20,12 +21,15 @@ const LayoutWrapper = ({ children }) => {
 const Root = () => {
   return (
     <Router>
+      <AuthProvider>
+
       <LayoutWrapper>
         <Routes>
           <Route path="/" element={<App />} />
           <Route path="/login" element={<Login />} />
         </Routes>
       </LayoutWrapper>
+      </AuthProvider>
     </Router>
   );
 };

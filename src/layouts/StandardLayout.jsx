@@ -1,37 +1,33 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import { auth } from "../helpers/firebase/config"; // Ensure Firebase is correctly initialized
+import { auth } from "../helpers/firebase/config";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
+import { AuthContext } from "../hooks/AuthContext";
 
 const StandardLayout = ({ children }) => {
-  const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState(null);
-  const navigate = useNavigate(); // Use react-router's navigate
+  const { user, loading, setUser } = useContext(AuthContext);
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((user) => {
-      if (!user) {
-        navigate("/login"); // Redirect if not authenticated
-      } else {
-        setUser(user);
-      }
-      setLoading(false);
-    });
+  if (loading) {
+    return <div className="h-screen flex justify-center items-center">Loading...</div>;
+  }
 
-    return () => unsubscribe();
-  }, [navigate]);
+  if (!user) {
+    navigate("/login");
+    return null;
+  }
 
   const logOut = async () => {
     try {
       await auth.signOut();
-      navigate("/login"); // Redirect to login after logout
+      localStorage.removeItem("savedUsers"); // Clear offline data
+      setUser(null);
+      navigate("/login");
     } catch (error) {
       console.error("Logout Error:", error);
     }
   };
-
-  if (loading) return <div className="h-screen flex justify-center items-center">Loading...</div>;
 
   return (
     <div className="flex h-screen">
