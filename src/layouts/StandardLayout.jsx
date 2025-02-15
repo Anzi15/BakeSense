@@ -31,7 +31,7 @@ const StandardLayout = ({ children }) => {
 
   return (
     <div className="flex h-screen">
-      <Sidebar />
+      <Sidebar userRole={user?.role === "factory" ?"factory": "branch"} />
       <div className="flex-1 bg-gray-100 overflow-auto sm:pl-64">
         <Navbar logOut={logOut} />
         <div className="p-4">{children}</div>
