@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom';
 const FactoryDashboard = () => {
   const vendors = [
     { name: "ABC Flour Mills", category: "Flour", deliveries: 50, lastDelivery: "Feb 12", status: "On Time", contact: "John Doe", phone: "123-456-7890", location: "Lahore", payment: "Paid" },
-    { name: "XYZ Sugar Ltd.", category: "Sugar", deliveries: 30, lastDelivery: "Feb 10", status: "Delayed", contact: "Jane Smith", phone: "987-654-3210", location: "Karachi", payment: "Pending" },
+    { name: "XYZ Sugar Ltd", category: "Sugar", deliveries: 30, lastDelivery: "Feb 10", status: "Delayed", contact: "Jane Smith", phone: "987-654-3210", location: "Karachi", payment: "Pending" },
   ];
   return (
     <div>
