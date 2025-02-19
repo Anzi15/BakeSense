@@ -82,32 +82,38 @@ useEffect(() => {
   const fetchAccounts = async () => {
     try {
       const querySnapshot = await getDocs(collection(db, "accounts"));
-      const accountsList = querySnapshot.docs.map((doc) => ({
+      let accountsList = querySnapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       }));
-
-      // Load offline accounts from localStorage
+  
+      // Load offline data
       const offlineAccounts = JSON.parse(localStorage.getItem("offlineAccounts")) || [];
-
-      // Merge and remove duplicates (using accountCode as a unique identifier)
+      const offlineDeletes = JSON.parse(localStorage.getItem("offlineDeletes")) || [];
+  
+      // Filter out deleted items
+      accountsList = accountsList.filter(acc => !offlineDeletes.includes(acc.id));
+  
+      // Merge and remove duplicates
       const mergedAccounts = [...accountsList, ...offlineAccounts].reduce((acc, curr) => {
-        acc.set(curr.accountCode, curr); // Use a Map to remove duplicates
+        acc.set(curr.accountCode, curr);
         return acc;
       }, new Map());
-
+  
       const uniqueAccounts = Array.from(mergedAccounts.values());
-
+  
       // Update state
       setAccounts(uniqueAccounts.filter((acc) => acc.category === "Account"));
       setBranches(uniqueAccounts.filter((acc) => acc.category === "Branch"));
     } catch (error) {
       console.error("Error fetching accounts:", error);
-
-      // If there's an error (e.g., offline), load only offline data
+      // If offline, load only local data
       const offlineAccounts = JSON.parse(localStorage.getItem("offlineAccounts")) || [];
-      setAccounts(offlineAccounts.filter((acc) => acc.category === "Account"));
-      setBranches(offlineAccounts.filter((acc) => acc.category === "Branch"));
+      const offlineDeletes = JSON.parse(localStorage.getItem("offlineDeletes")) || [];
+  
+      const filteredAccounts = offlineAccounts.filter(acc => !offlineDeletes.includes(acc.id));
+      setAccounts(filteredAccounts.filter((acc) => acc.category === "Account"));
+      setBranches(filteredAccounts.filter((acc) => acc.category === "Branch"));
     } finally {
       setLoading(false);
     }
