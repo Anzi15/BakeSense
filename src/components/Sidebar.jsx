@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import { MdDashboard, MdInventory } from "react-icons/md";
+import { MdAttachMoney, MdDashboard, MdInventory } from "react-icons/md";
 import { FaThList } from "react-icons/fa";
+import { BsCashStack } from "react-icons/bs";
 
 const Sidebar = ({ userRole }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -21,6 +22,11 @@ const Sidebar = ({ userRole }) => {
       label: "Inventory",
       link: "/inventory",
       icon: MdInventory,
+    },
+    {
+      label: "Cash Voucher",
+      link: "/cash-voucher",
+      icon: BsCashStack,
     },
   ];
 
