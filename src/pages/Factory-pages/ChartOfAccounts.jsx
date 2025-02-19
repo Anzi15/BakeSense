@@ -28,37 +28,173 @@ const ChartOfAccounts = () => {
     contact: "",
   });
 
-  useEffect(() => {
-    const fetchAccounts = async () => {
-      try {
-        const querySnapshot = await getDocs(collection(db, "accounts"));
-        const accountsList = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
 
-        setAccounts(accountsList.filter((acc) => acc.category === "Account"));
-        setBranches(accountsList.filter((acc) => acc.category === "Branch"));
-      } catch (error) {
-        console.error("Error fetching accounts:", error);
-      } finally {
-        setLoading(false);
+// Sync offline data when the internet comes back online
+useEffect(() => {
+  const syncOfflineData = async () => {
+    if (navigator.onLine) {
+      const offlineData = JSON.parse(localStorage.getItem('offlineAccounts')) || [];
+      if (offlineData.length > 0) {
+        try {
+          // Sync each offline account with Firebase
+          for (const account of offlineData) {
+            const docRef = await addDoc(collection(db, "accounts"), account);
+            setAccounts((prevAccounts) => [
+              ...prevAccounts,
+              { id: docRef.id, ...account },
+            ]);
+          }
+          // Clear the offline data after successful sync
+          localStorage.removeItem('offlineAccounts');
+        } catch (error) {
+          console.error("Error syncing offline accounts:", error);
+        }
       }
-    };
+    }
+  };
 
-    fetchAccounts();
-  }, []);
+  // When the user comes back online, sync data
+  window.addEventListener('online', syncOfflineData);
 
+  // Load offline data when the page loads (even after navigation)
+  const loadOfflineAccounts = () => {
+    const offlineData = JSON.parse(localStorage.getItem('offlineAccounts')) || [];
+    if (offlineData.length > 0) {
+      // Add offline data to the state (render it in DOM)
+      setAccounts((prevAccounts) => [
+        ...prevAccounts,
+        ...offlineData.map(account => ({
+          id: `offline-${Date.now()}`, // Temporary ID for offline data
+          ...account,
+        })),
+      ]);
+    }
+  };
+
+  loadOfflineAccounts(); // Load any offline data when the component is mounted
+
+  return () => {
+    window.removeEventListener('online', syncOfflineData);
+  };
+}, []);
+
+useEffect(() => {
+  const fetchAccounts = async () => {
+    try {
+      const querySnapshot = await getDocs(collection(db, "accounts"));
+      const accountsList = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+
+      // Load offline accounts from localStorage
+      const offlineAccounts = JSON.parse(localStorage.getItem("offlineAccounts")) || [];
+
+      // Merge and remove duplicates (using accountCode as a unique identifier)
+      const mergedAccounts = [...accountsList, ...offlineAccounts].reduce((acc, curr) => {
+        acc.set(curr.accountCode, curr); // Use a Map to remove duplicates
+        return acc;
+      }, new Map());
+
+      const uniqueAccounts = Array.from(mergedAccounts.values());
+
+      // Update state
+      setAccounts(uniqueAccounts.filter((acc) => acc.category === "Account"));
+      setBranches(uniqueAccounts.filter((acc) => acc.category === "Branch"));
+    } catch (error) {
+      console.error("Error fetching accounts:", error);
+
+      // If there's an error (e.g., offline), load only offline data
+      const offlineAccounts = JSON.parse(localStorage.getItem("offlineAccounts")) || [];
+      setAccounts(offlineAccounts.filter((acc) => acc.category === "Account"));
+      setBranches(offlineAccounts.filter((acc) => acc.category === "Branch"));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchAccounts();
+
+  // Sync offline data when the internet is restored
+  const syncOfflineData = async () => {
+    if (navigator.onLine) {
+      let offlineAccounts = JSON.parse(localStorage.getItem("offlineAccounts")) || [];
+      if (offlineAccounts.length > 0) {
+        try {
+          const syncedAccounts = [];
+          for (const account of offlineAccounts) {
+            const docRef = await addDoc(collection(db, "accounts"), account);
+            syncedAccounts.push({ id: docRef.id, ...account });
+          }
+
+          // Remove synced accounts from localStorage
+          localStorage.removeItem("offlineAccounts");
+
+          // Merge freshly synced accounts with existing state (avoiding duplicates)
+          setAccounts((prevAccounts) => {
+            const merged = [...prevAccounts, ...syncedAccounts].reduce((acc, curr) => {
+              acc.set(curr.accountCode, curr);
+              return acc;
+            }, new Map());
+            return Array.from(merged.values());
+          });
+        } catch (error) {
+          console.error("Error syncing offline accounts:", error);
+        }
+      }
+    }
+  };
+
+  window.addEventListener("online", syncOfflineData);
+
+  return () => {
+    window.removeEventListener("online", syncOfflineData);
+  };
+}, []);
+
+
+  
   const addAccount = async (e) => {
     e.preventDefault();
     setAddingAccount(true);
-
+  
+    const accountsData = { ...newAccount, category: "Account" };
+  
+    // Check if the user is offline
+    if (!navigator.onLine) {
+      alert("You are offline. Your changes will be saved locally and synced when you are back online.");
+  
+      // Save the account data locally (e.g., in localStorage)
+      const offlineData = JSON.parse(localStorage.getItem('offlineAccounts')) || [];
+      offlineData.push(accountsData);
+      localStorage.setItem('offlineAccounts', JSON.stringify(offlineData));
+  
+      // Update the UI with the locally saved account
+      setAccounts((prevAccounts) => [
+        ...prevAccounts,
+        { id: `offline-${Date.now()}`, ...accountsData }, // Temporarily use a fake ID
+      ]);
+  
+      setNewAccount({
+        accountCode: "",
+        accountName: "",
+        accountType: "Accounts Payable",
+        accountsType: "Supplier",
+        openingBalance: 0,
+        currentBalance: 0,
+      });
+      setAddingAccount(false);
+      return;
+    }
+  
     try {
-      const accountsData = { ...newAccount, category: "Account" };
+      // If online, add the account to Firebase
       const docRef = await addDoc(collection(db, "accounts"), accountsData);
-      
-      setAccounts((prevAccounts) => [...prevAccounts, { id: docRef.id, ...accountsData }]);
-
+      setAccounts((prevAccounts) => [
+        ...prevAccounts,
+        { id: docRef.id, ...accountsData },
+      ]);
+  
       setNewAccount({
         accountCode: "",
         accountName: "",
@@ -68,78 +204,83 @@ const ChartOfAccounts = () => {
         currentBalance: 0,
       });
     } catch (error) {
-      console.error("Error adding accounts:", error);
+      console.error("Error adding account:", error);
     } finally {
       setAddingAccount(false);
     }
-  };
+  };  
 
-  const addBranch = async (e) => {
-    e.preventDefault();
-    setAddingBranch(true);
 
-    try {
-      const branchData = { ...newBranch, category: "Branch" };
-      const docRef = await addDoc(collection(db, "accounts"), branchData);
-      
-      setBranches((prevBranches) => [...prevBranches, { id: docRef.id, ...branchData }]);
-
-      setNewBranch({
-        branchCode: "",
-        branchName: "",
-        location: "",
-        contact: "",
-      });
-    } catch (error) {
-      console.error("Error adding branch:", error);
-    } finally {
-      setAddingBranch(false);
-    }
-  };
-
-  const deleteAccount = async (accountsId) => {
-    const result = await Swal.fire({
-      title: 'Are you sure?',
-      text: 'This action cannot be undone!',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: 'Yes, delete it!',
-      cancelButtonText: 'Cancel'
-    });
+  const syncOfflineData = async () => {
+    if (navigator.onLine) {
+      let offlineDeletes = JSON.parse(localStorage.getItem("offlineDeletes")) || [];
   
-    if (result.isConfirmed) {
-      try {
-        await deleteDoc(doc(db, "accounts", accountsId));
-        setAccounts((prevAccounts) => prevAccounts.filter((accounts) => accounts.id !== accountsId));
-        Swal.fire('Deleted!', 'The accounts has been deleted.', 'success');
-      } catch (error) {
-        console.error("Error deleting accounts:", error);
-        Swal.fire('Error', 'There was an issue deleting the accounts.', 'error');
+      if (offlineDeletes.length > 0) {
+        try {
+          for (const accountId of offlineDeletes) {
+            await deleteDoc(doc(db, "accounts", accountId));
+          }
+          localStorage.removeItem("offlineDeletes"); // Clear deletion queue after syncing
+        } catch (error) {
+          console.error("Error syncing offline deletions:", error);
+        }
       }
     }
   };
   
-  const deleteBranch = async (branchId) => {
+
+  const deleteAccount = async (accountId) => {
     const result = await Swal.fire({
-      title: 'Are you sure?',
-      text: 'This action cannot be undone!',
-      icon: 'warning',
+      title: "Are you sure?",
+      text: "This action cannot be undone!",
+      icon: "warning",
       showCancelButton: true,
-      confirmButtonText: 'Yes, delete it!',
-      cancelButtonText: 'Cancel'
+      confirmButtonText: "Yes, delete it!",
+      cancelButtonText: "Cancel",
     });
   
     if (result.isConfirmed) {
       try {
-        await deleteDoc(doc(db, "accounts", branchId));
-        setBranches((prevBranches) => prevBranches.filter((branch) => branch.id !== branchId));
-        Swal.fire('Deleted!', 'The branch has been deleted.', 'success');
+        // Load offline accounts
+        let offlineAccounts = JSON.parse(localStorage.getItem("offlineAccounts")) || [];
+        let offlineDeletes = JSON.parse(localStorage.getItem("offlineDeletes")) || [];
+  
+        // Check if the account exists in localStorage (offline)
+        const isOfflineAccount = offlineAccounts.some(acc => acc.id === accountId);
+  
+        if (isOfflineAccount) {
+          // Remove from localStorage (offline accounts)
+          offlineAccounts = offlineAccounts.filter(acc => acc.id !== accountId);
+          localStorage.setItem("offlineAccounts", JSON.stringify(offlineAccounts));
+  
+          // Remove from state
+          setAccounts(prevAccounts => prevAccounts.filter(acc => acc.id !== accountId));
+  
+          Swal.fire("Deleted!", "The offline account has been deleted.", "success");
+        } else if (!navigator.onLine) {
+          // If offline, mark for later deletion
+          offlineDeletes.push(accountId);
+          localStorage.setItem("offlineDeletes", JSON.stringify(offlineDeletes));
+  
+          // Remove from state immediately
+          setAccounts(prevAccounts => prevAccounts.filter(acc => acc.id !== accountId));
+  
+          Swal.fire("Deleted!", "The account will be removed from Firestore when online.", "success");
+        } else {
+          // If online, delete from Firestore immediately
+          await deleteDoc(doc(db, "accounts", accountId));
+          setAccounts(prevAccounts => prevAccounts.filter(acc => acc.id !== accountId));
+          Swal.fire("Deleted!", "The account has been deleted from Firestore.", "success");
+        }
       } catch (error) {
-        console.error("Error deleting branch:", error);
-        Swal.fire('Error', 'There was an issue deleting the branch.', 'error');
+        console.error("Error deleting account:", error);
+        Swal.fire("Error", "There was an issue deleting the account.", "error");
       }
     }
   };
+  
+  
+
 
   const editAccountHandler = (accounts) => {
     setEditAccount(accounts);
@@ -153,15 +294,7 @@ const ChartOfAccounts = () => {
     });
   };
 
-  const editBranchHandler = (branch) => {
-    setEditBranch(branch);
-    setNewBranch({
-      branchCode: branch.branchCode,
-      branchName: branch.branchName,
-      location: branch.location,
-      contact: branch.contact,
-    });
-  };
+
 
   const updateAccount = async (e) => {
     e.preventDefault();
@@ -196,34 +329,6 @@ const ChartOfAccounts = () => {
     }
   };
 
-  const updateBranch = async (e) => {
-    e.preventDefault();
-    try {
-      const branchRef = doc(db, "accounts", editBranch.id);
-      await updateDoc(branchRef, {
-        branchCode: newBranch.branchCode,
-        branchName: newBranch.branchName,
-        location: newBranch.location,
-        contact: newBranch.contact,
-      });
-
-      setBranches((prevBranches) =>
-        prevBranches.map((branch) =>
-          branch.id === editBranch.id ? { ...branch, ...newBranch } : branch
-        )
-      );
-
-      setEditBranch(null);
-      setNewBranch({
-        branchCode: "",
-        branchName: "",
-        location: "",
-        contact: "",
-      });
-    } catch (error) {
-      console.error("Error updating branch:", error);
-    }
-  };
 
   return (
     <div className="p-6 max-w-6xl mx-auto">
@@ -269,7 +374,7 @@ const ChartOfAccounts = () => {
   >
     <option value="" disabled>Select Account Type</option>
     <option value="personal">Expense</option>
-    <option value="business">Payable</option>
+    <option value="capital">Capital</option>
     <option value="admin">Assets</option>
     <option value="liability">Liability</option>
   </select>
