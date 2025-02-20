@@ -6,6 +6,7 @@ import ChartOfAccounts from "./pages/Factory-pages/ChartOfAccounts.jsx";
 import NoAccessPage from "./pages/NoAccessPage.jsx";
 import StandardLayout from "./layouts/StandardLayout";
 import { AuthContext } from "./hooks/AuthContext.js"; // Ensure correct import
+import Inventory from "./pages/Factory-pages/Inventory.jsx";
 
 const LayoutWrapper = ({ children }) => {
   const location = useLocation();
@@ -26,6 +27,7 @@ const Root = () => {
         <Route path="/" element={<App />} />
         <Route path="/login" element={<Login />} />
         <Route path="/chart-of-accounts" element={user?.role === "factory" ? <ChartOfAccounts /> : <NoAccessPage />} />
+        <Route path="/inventory" element={user?.role === "factory" ? <Inventory /> : <NoAccessPage />} />
       </Routes>
     </LayoutWrapper>
   );
