@@ -7,6 +7,8 @@ import NoAccessPage from "./pages/NoAccessPage.jsx";
 import StandardLayout from "./layouts/StandardLayout";
 import { AuthContext } from "./hooks/AuthContext.js"; // Ensure correct import
 import Inventory from "./pages/Factory-pages/Inventory.jsx";
+import PaymentVoucher from "./pages/Factory-pages/Payment-voucher.jsx";
+import DayEntries from "./pages/Factory-pages/DayEntries.jsx";
 
 const LayoutWrapper = ({ children }) => {
   const location = useLocation();
@@ -28,6 +30,8 @@ const Root = () => {
         <Route path="/login" element={<Login />} />
         <Route path="/chart-of-accounts" element={user?.role === "factory" ? <ChartOfAccounts /> : <NoAccessPage />} />
         <Route path="/inventory" element={user?.role === "factory" ? <Inventory /> : <NoAccessPage />} />
+        <Route path="/payment-voucher" element={user?.role === "factory" ? <PaymentVoucher /> : <NoAccessPage />} />
+        <Route path="/payment-voucher/day/:date" element={user?.role === "factory" ? <DayEntries /> : <NoAccessPage />} />
       </Routes>
     </LayoutWrapper>
   );

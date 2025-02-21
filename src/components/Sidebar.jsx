@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { MdAttachMoney, MdDashboard, MdInventory } from "react-icons/md";
-import { FaThList } from "react-icons/fa";
+import { MdAttachMoney, MdDashboard, MdInventory, MdOutlineAttachMoney } from "react-icons/md";
+import { FaGetPocket, FaThList } from "react-icons/fa";
 import { BsCashStack } from "react-icons/bs";
 
 const Sidebar = ({ userRole }) => {
@@ -24,9 +24,14 @@ const Sidebar = ({ userRole }) => {
       icon: MdInventory,
     },
     {
-      label: "Cash Voucher",
-      link: "/cash-voucher",
-      icon: BsCashStack,
+      label: "Payment Voucher",
+      link: "/payment-voucher",
+      icon: MdOutlineAttachMoney,
+    },
+    {
+      label: "Receive Voucher",
+      link: "/receive-voucher",
+      icon: FaGetPocket,
     },
   ];
 
