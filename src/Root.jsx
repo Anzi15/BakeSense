@@ -9,6 +9,8 @@ import { AuthContext } from "./hooks/AuthContext.js"; // Ensure correct import
 import Inventory from "./pages/Factory-pages/Inventory.jsx";
 import PaymentVoucher from "./pages/Factory-pages/Payment-voucher.jsx";
 import DayEntries from "./pages/Factory-pages/DayEntries.jsx";
+import ReceiveVoucher from "./pages/Factory-pages/Recive-voucher.jsx";
+import ReceiveDayEntriesPage from "./pages/Factory-pages/ReciveDayEntries.jsx";
 
 const LayoutWrapper = ({ children }) => {
   const location = useLocation();
@@ -32,6 +34,8 @@ const Root = () => {
         <Route path="/inventory" element={user?.role === "factory" ? <Inventory /> : <NoAccessPage />} />
         <Route path="/payment-voucher" element={user?.role === "factory" ? <PaymentVoucher /> : <NoAccessPage />} />
         <Route path="/payment-voucher/day/:date" element={user?.role === "factory" ? <DayEntries /> : <NoAccessPage />} />
+        <Route path="/receive-voucher" element={user?.role === "factory" ? <ReceiveVoucher /> : <NoAccessPage />} />
+        <Route path="/receive-voucher/day/:date" element={user?.role === "factory" ? <ReceiveDayEntriesPage /> : <NoAccessPage />} />
       </Routes>
     </LayoutWrapper>
   );
