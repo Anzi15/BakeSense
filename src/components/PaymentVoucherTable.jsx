@@ -1,12 +1,12 @@
 import { useState } from "react";
 
-const PaymentVoucherTable = ({ allEntries, editEntry, deleteEntry }) => {
+const PaymentVoucherTable = ({ allEntries=[], editEntry, deleteEntry }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortField, setSortField] = useState("");
   const [sortOrder, setSortOrder] = useState("asc");
 
   // Search by "payer" only
-  const filteredEntries = allEntries.filter((entry) =>
+  const filteredEntries = allEntries?.filter((entry) =>
     entry.payer.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -83,7 +83,7 @@ const PaymentVoucherTable = ({ allEntries, editEntry, deleteEntry }) => {
           </tr>
         </thead>
         <tbody>
-          {sortedEntries.map((entry, index) => (
+          {sortedEntries?.map((entry, index) => (
             <tr key={index} className="border border-gray-300">
               <td className="border border-gray-300 px-4 py-2">{entry.amount}</td>
               <td className="border border-gray-300 px-4 py-2">{entry.cashier}</td>

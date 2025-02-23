@@ -25,69 +25,53 @@ const DayEntriesPage = () => {
   const [cashier, setCashier] = useState("");
 
   useEffect(() => {
-    fetchAccounts();
-    syncOfflineData();
-  }, []);
-
-  const fetchAccounts = async () => {
-    try {
-      const querySnapshot = await getDocs(collection(db, "accounts"));
-      let accountsList = querySnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-  
-      const offlineAccounts = JSON.parse(localStorage.getItem("offlineAccounts")) || [];
-      const offlineDeletes = JSON.parse(localStorage.getItem("offlineDeletes")) || [];
-  
-      accountsList = accountsList.filter(acc => !offlineDeletes.includes(acc.id));
-  
-      const mergedAccounts = [...accountsList, ...offlineAccounts].reduce((acc, curr) => {
-        acc.set(curr.accountCode, curr);
-        return acc;
-      }, new Map());
-  
-      const uniqueAccounts = Array.from(mergedAccounts.values());
-  
-      setAccounts(uniqueAccounts.filter((acc) => acc.category === "Account"))
-    } catch (error) {
-      console.error("Error fetching accounts:", error);
-      const offlineAccounts = JSON.parse(localStorage.getItem("offlineAccounts")) || [];
-      const offlineDeletes = JSON.parse(localStorage.getItem("offlineDeletes")) || [];
-  
-      const filteredAccounts = offlineAccounts.filter(acc => !offlineDeletes.includes(acc.id));
-      setAccounts(filteredAccounts.filter((acc) => acc.category === "Account"));
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const generateVoucherNumber = async () => {
-    setVoucherNumber(uuidv4());
-  };
-
-  const syncOfflineData = async () => {
-    if (navigator.onLine) {
-      const offlineData = JSON.parse(localStorage.getItem("offlineAccounts")) || [];
-      if (offlineData.length > 0) {
-        try {
-          for (const account of offlineData) {
-            const docRef = await addDoc(collection(db, "accounts"), account);
-            setAccounts((prevAccounts) => [...prevAccounts, { id: docRef.id, ...account }]);
+    const syncOfflineData = async () => {
+      if (navigator.onLine) {
+        const offlineData = JSON.parse(localStorage.getItem('offlineEntries')) || [];
+        if (offlineData.length > 0) {
+          try {
+            // Sync each offline account with Firebase
+            for (const entry of offlineData) {
+              const docRef = await addDoc(collection(db, offlineData[entry.id]), entry);
+              setAllEntries((prevEntries) => [
+                ...prevEntries,
+                { id: docRef.id, ...entry },
+              ]);
+            }
+            // Clear the offline data after successful sync
+            localStorage.removeItem('offlineAccounts');
+          } catch (error) {
+            console.error("Error syncing offline accounts:", error);
           }
-          localStorage.removeItem("offlineAccounts");
-        } catch (error) {
-          console.error("Error syncing offline accounts:", error);
         }
       }
-    }
-  };
+    };
+  
+    // When the user comes back online, sync data
+    window.addEventListener('online', syncOfflineData);
+  
+    // Load offline data when the page loads (even after navigation)
+    const loadOfflineAccounts = () => {
+      const offlineData = JSON.parse(localStorage.getItem('offlineAccounts')) || [];
+      if (offlineData.length > 0) {
+        // Add offline data to the state (render it in DOM)
+        setAccounts((prevAccounts) => [
+          ...prevAccounts,
+          ...offlineData.map(account => ({
+            id: `offline-${Date.now()}`, // Temporary ID for offline data
+            ...account,
+          })),
+        ]);
+      }
+    };
+  
+    loadOfflineAccounts(); // Load any offline data when the component is mounted
+  
+    return () => {
+      window.removeEventListener('online', syncOfflineData);
+    };
+  }, []);
 
-  const handlePayerSelection = (payer) => {
-    setSelectedPayer(payer);
-    setPayer(payer);
-    setShowPayerList(false);
-  };
 
   const handleSubmit = async () => {
     if (!voucherNumber || !payer || amount <= 0 || !cashier) {
@@ -119,11 +103,11 @@ const DayEntriesPage = () => {
             entries: arrayUnion(newEntry),
           });
         } else {
-          // If document doesn't exist, create a new one with first entry
           await setDoc(dateRef, {
             entries: [newEntry],
           });
         }
+        setAllEntries([...allEntries, newEntry])
           Swal.fire({icon:"success", title: "Success!!", titleText: "Entry added successfully!"})
       } else {
         // Handle offline storage
@@ -131,6 +115,8 @@ const DayEntriesPage = () => {
         if (!offlineEntries[date]) offlineEntries[date] = [];
         offlineEntries[date].push(newEntry);
         localStorage.setItem("offlineEntries", JSON.stringify(offlineEntries));
+        setAllEntries((prevEntries) => [...prevEntries, newEntry]);
+
   
         alert("You are offline. Entry saved locally and will sync when online.");
       }
@@ -153,18 +139,143 @@ const DayEntriesPage = () => {
       setLoading(false);
     }
   };
+  useEffect(() => {
+    fetchAccounts();
+    syncOfflineData();
+  }, []);
+
+  const fetchAccounts = async () => {
+    try {
+      const querySnapshot = await getDocs(collection(db, "accounts"));
+      let accountsList = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+  
+      const offlineAccounts = JSON.parse(localStorage.getItem("offlineAccounts")) || [];
+      const offlineDeletes = JSON.parse(localStorage.getItem("offlineDeletes")) || [];
+  
+      accountsList = accountsList?.filter(acc => !offlineDeletes.includes(acc.id));
+  
+      const mergedAccounts = [...accountsList, ...offlineAccounts].reduce((acc, curr) => {
+        acc.set(curr.accountCode, curr);
+        return acc;
+      }, new Map());
+  
+      const uniqueAccounts = Array.from(mergedAccounts.values());
+  
+      setAccounts(uniqueAccounts?.filter((acc) => acc.category === "Account"))
+    } catch (error) {
+      console.error("Error fetching accounts:", error);
+      const offlineAccounts = JSON.parse(localStorage.getItem("offlineAccounts")) || [];
+      const offlineDeletes = JSON.parse(localStorage.getItem("offlineDeletes")) || [];
+  
+      const filteredAccounts = offlineAccounts?.filter(acc => !offlineDeletes.includes(acc.id));
+      setAccounts(filteredAccounts?.filter((acc) => acc.category === "Account"));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const generateVoucherNumber = async () => {
+    setVoucherNumber(uuidv4());
+  };
+
+  const syncOfflineData = async () => {
+    if (navigator.onLine) {
+      // Sync accounts (your existing code)
+      const offlineData = JSON.parse(localStorage.getItem("offlineAccounts")) || [];
+      if (offlineData.length > 0) {
+        try {
+          for (const account of offlineData) {
+            const docRef = await addDoc(collection(db, "accounts"), account);
+            setAccounts((prevAccounts) => [...prevAccounts, { id: docRef.id, ...account }]);
+          }
+          localStorage.removeItem("offlineAccounts");
+        } catch (error) {
+          console.error("Error syncing offline accounts:", error);
+        }
+      }
+  
+      // Sync offline entries
+      const offlineEntries = JSON.parse(localStorage.getItem("offlineEntries")) || {};
+      for (const entryDate in offlineEntries) {
+        try {
+          const dateRef = doc(db, "paymentVouchers", entryDate);
+          const docSnap = await getDoc(dateRef);
+  
+          if (docSnap.exists()) {
+            await updateDoc(dateRef, {
+              entries: arrayUnion(...offlineEntries[entryDate]),
+            });
+          } else {
+            await setDoc(dateRef, {
+              entries: offlineEntries[entryDate],
+            });
+          }
+        } catch (error) {
+          console.error(`Error syncing offline entries for ${entryDate}:`, error);
+        }
+      }
+      localStorage.removeItem("offlineEntries");
+    }
+  };
+  
+
+  const handlePayerSelection = (payer) => {
+    setSelectedPayer(payer);
+    setPayer(payer);
+    setShowPayerList(false);
+  };
+
+
 
   useEffect(()=>{
-    const fetchAllEntries = async()=>{
-      const getAllEntries = await getDoc(doc(db,"paymentVouchers",date))
-      // const allEntries = [];
-      // getAllEntries.forEach((doc)=>{
-      //     allEntries.push(doc.data())
-      // })
-      console.log(getAllEntries.data().entries);
-      setAllEntries(getAllEntries.data().entries)
-      setAllEntriesLoading(false)
-    }
+    const fetchAllEntries = async () => {
+      try {
+        const getAllEntries = await getDoc(doc(db, "paymentVouchers", date));
+    
+        if (!getAllEntries.exists()) {
+          console.warn("No document found for date:", date);
+          setAllEntries([]);
+        } else {
+          const localEntries = JSON.parse(localStorage.getItem("offlineEntries"));
+
+          if(localEntries){
+            const combinedEntries = [...getAllEntries.data().entries, ...localEntries[date]]
+            console.log(combinedEntries)
+            setAllEntries(combinedEntries);
+
+          }else{
+            const combinedEntries = [...getAllEntries.data().entries]
+            console.log(combinedEntries)
+            setAllEntries(combinedEntries);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching accounts:", error);
+    
+        const localEntries = JSON.parse(localStorage.getItem("offlineEntries")) || [];
+
+        const localDeletedEntries = JSON.parse(localStorage.getItem("offlineEntriesDeletes")) || [] 
+
+        // Retrieve offline data from localStorage
+        const offlineEntries = localEntries[date];
+        console.log(offlineEntries)
+        const offlineEntriesDeletes = localDeletedEntries[date] || []
+        
+        
+    
+        setAllEntries(offlineEntries);
+      } finally {
+        setAllEntriesLoading(false);
+      }
+    };
+    
+    
+    // Call the function
+    fetchAllEntries();
+    
     fetchAllEntries()
 
   },[])
