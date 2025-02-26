@@ -12,6 +12,7 @@ import DayEntries from "./pages/Factory-pages/DayEntries.jsx";
 import ReceiveVoucher from "./pages/Factory-pages/Recive-voucher.jsx";
 import ReceiveDayEntriesPage from "./pages/Factory-pages/ReciveDayEntries.jsx";
 import RawGoodsInventory from "./pages/Factory-pages/RawGoodsInventory.jsx";
+import RawItems from "./pages/Factory-pages/RawItems.jsx";
 
 const LayoutWrapper = ({ children }) => {
   const location = useLocation();
@@ -38,6 +39,7 @@ const Root = () => {
         <Route path="/payment-voucher/day/:date" element={user?.role === "factory" ? <DayEntries /> : <NoAccessPage />} />
         <Route path="/receive-voucher" element={user?.role === "factory" ? <ReceiveVoucher /> : <NoAccessPage />} />
         <Route path="/receive-voucher/day/:date" element={user?.role === "factory" ? <ReceiveDayEntriesPage /> : <NoAccessPage />} />
+        <Route path="/items-list" element={user?.role === "factory" ? <RawItems /> : <NoAccessPage />} />
       </Routes>
     </LayoutWrapper>
   );

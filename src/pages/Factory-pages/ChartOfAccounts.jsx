@@ -379,9 +379,9 @@ useEffect(() => {
     className="border border-gray-300 p-2 mt-1 w-full bg-white"
   >
     <option value="" disabled>Select Account Type</option>
-    <option value="personal">Expense</option>
+    <option value="expense">Expense</option>
     <option value="capital">Capital</option>
-    <option value="admin">Assets</option>
+    <option value="assets">Assets</option>
     <option value="liability">Liability</option>
   </select>
 </div>

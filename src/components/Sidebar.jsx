@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { MdAttachMoney, MdDashboard, MdInventory, MdOutlineAttachMoney } from "react-icons/md";
-import { FaGetPocket, FaThList } from "react-icons/fa";
+import { FaBookOpen, FaGetPocket, FaThList } from "react-icons/fa";
 import { BsCashStack } from "react-icons/bs";
+import { LuArrowLeftFromLine, LuArrowRightFromLine } from "react-icons/lu";
 
 const Sidebar = ({ userRole }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -32,6 +33,26 @@ const Sidebar = ({ userRole }) => {
       label: "Receive Voucher",
       link: "/receive-voucher",
       icon: FaGetPocket,
+    },
+    {
+      label: "Items",
+      link: "/items-list",
+      icon: FaThList,
+    },
+    {
+      label: "Recipe book",
+      link: "/recipe-book",
+      icon: FaBookOpen,
+    },
+    {
+      label: "Purchase Module",
+      link: "/receive-voucher",
+      icon: LuArrowLeftFromLine,
+    },
+    {
+      label: "Transfer Module",
+      link: "/Transfer-voucher",
+      icon: LuArrowRightFromLine,
     },
   ];
 
