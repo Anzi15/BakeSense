@@ -24,23 +24,23 @@ const RawItems = () => {
     itemUnit: "kg",
     quantity: 0,
     pricePerUnit: 0, // Optional
-    supplierName: "",
     minimumQuantity: 0, // Optional
-    category: "Raw Material",
-    description: "", // Optional
+    lastUpdated: new Date().toISOString(),
   });
-
-  const editRawItemHandler = (rawItems) => {
-    setEditRawItem(rawItems);
+  
+  const editRawItemHandler = (rawItem) => {
+    setEditRawItem(rawItem);
     setNewRawItem({
-      rawItemCode: rawItems.rawItemCode,
-      rawItemName: rawItems.rawItemName,
-      rawItemType: rawItems.rawItemType,
-      rawItemsType: rawItems.rawItemsType,
-      openingBalance: rawItems.openingBalance,
-      currentBalance: rawItems.currentBalance,
+      itemCode: rawItem.itemCode, // Use existing or generate new one
+      itemName: rawItem.itemName || "",
+      itemUnit: rawItem.itemUnit || "kg",
+      quantity: rawItem.quantity ?? 0,
+      pricePerUnit: rawItem.pricePerUnit ?? 0,
+      minimumQuantity: rawItem.minimumQuantity ?? 0,
+      lastUpdated: rawItem.lastUpdated || new Date().toISOString(),
     });
   };
+  
 
   useEffect(() => {
     const syncOfflineData = async () => {
@@ -255,12 +255,13 @@ const RawItems = () => {
 
       setRawItems((prevRawItems) =>
         prevRawItems.map((item) =>
-          item.id === editItem.id ? { ...item, ...newRawItem } : item
+          item.itemCode === editItem.itemCode ? { ...item, ...newRawItem } : item
         )
       );
 
       setEditItem(null);
-      resetForm();
+      window.location.reload();
+     //how to fetch the updated data from firestore
     } catch (error) {
       console.error("Error updating raw item:", error);
     }
