@@ -13,6 +13,8 @@ import ReceiveVoucher from "./pages/Factory-pages/Recive-voucher.jsx";
 import ReceiveDayEntriesPage from "./pages/Factory-pages/ReciveDayEntries.jsx";
 import RawGoodsInventory from "./pages/Factory-pages/RawGoodsInventory.jsx";
 import RawItems from "./pages/Factory-pages/RawItems.jsx";
+import RecipeBook from "./pages/Factory-pages/RecipeBook.jsx";
+import AddNewRecipeBook from "./pages/Factory-pages/AddNewRecipe.jsx";
 
 const LayoutWrapper = ({ children }) => {
   const location = useLocation();
@@ -40,6 +42,8 @@ const Root = () => {
         <Route path="/receive-voucher" element={user?.role === "factory" ? <ReceiveVoucher /> : <NoAccessPage />} />
         <Route path="/receive-voucher/day/:date" element={user?.role === "factory" ? <ReceiveDayEntriesPage /> : <NoAccessPage />} />
         <Route path="/items-list" element={user?.role === "factory" ? <RawItems /> : <NoAccessPage />} />
+        <Route path="/recipe-book" element={user?.role === "factory" ? <RecipeBook /> : <NoAccessPage />} />
+        <Route path="/recipe-book/new" element={user?.role === "factory" ? <AddNewRecipeBook /> : <NoAccessPage />} />
       </Routes>
     </LayoutWrapper>
   );

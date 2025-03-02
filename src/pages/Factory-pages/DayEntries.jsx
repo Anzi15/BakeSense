@@ -23,6 +23,7 @@ const DayEntriesPage = () => {
   const [paymentMethod, setPaymentMethod] = useState("Cash");
   const [transactionId, setTransactionId] = useState("");
   const [cashier, setCashier] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     const syncOfflineData = async () => {
@@ -368,28 +369,48 @@ const DayEntriesPage = () => {
           onChange={(e) => setRemarks(e.target.value)}
         />
 
-        {showPayerList && (
-          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center">
-            <div className="bg-white p-4 rounded shadow-lg w-96">
-              <h3 className="text-lg font-bold mb-2">Select a Payer</h3>
-              <ul>
-                {accounts.map((account) => (
-                  <div
-                    key={account.id}
-                    className="p-2 border-b hover:bg-gray-200 cursor-pointer flex justify-between gap-6"
-                    onClick={() => handlePayerSelection(account.accountCode)}
-                  >
-                    <p>{account.accountCode}</p>
-                    <p>{account.accountName}</p>
-                  </div>
-                ))}
-              </ul>
-              <button onClick={() => setShowPayerList(false)} className="mt-4 p-2 bg-red-500 text-white rounded w-full">
-                Close
-              </button>
+{showPayerList && (
+  <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center">
+    <div className="bg-white p-4 rounded shadow-lg w-96">
+      <h3 className="text-lg font-bold mb-2">Select a Payer</h3>
+      
+      {/* Search Input */}
+      <input
+        type="text"
+        placeholder="Search..."
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        className="w-full p-2 border rounded mb-2"
+      />
+
+      <ul>
+        {accounts
+          .filter((account) =>
+            `${account.accountCode} ${account.accountName}`
+              .toLowerCase()
+              .includes(searchTerm.toLowerCase())
+          )
+          .map((account) => (
+            <div
+              key={account.id}
+              className="p-2 border-b hover:bg-gray-200 cursor-pointer flex justify-between gap-6"
+              onClick={() => handlePayerSelection(account.accountCode)}
+            >
+              <p>{account.accountCode}</p>
+              <p>{account.accountName}</p>
             </div>
-          </div>
-        )}
+          ))}
+      </ul>
+
+      <button
+        onClick={() => setShowPayerList(false)}
+        className="mt-4 p-2 bg-red-500 text-white rounded w-full"
+      >
+        Close
+      </button>
+    </div>
+  </div>
+)}
 
         <div className="w-full flex gap-3">
           <button className="w-full bg-blue-500 text-white text-lg py-2 mt-6" onClick={handleSubmit}>
