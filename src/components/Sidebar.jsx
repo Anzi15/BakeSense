@@ -3,6 +3,7 @@ import { MdAttachMoney, MdDashboard, MdInventory, MdOutlineAttachMoney } from "r
 import { FaBookOpen, FaGetPocket, FaThList } from "react-icons/fa";
 import { BsCashStack } from "react-icons/bs";
 import { LuArrowLeftFromLine, LuArrowRightFromLine } from "react-icons/lu";
+import { IoIosBarcode } from "react-icons/io";
 
 const Sidebar = ({ userRole }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -53,6 +54,11 @@ const Sidebar = ({ userRole }) => {
       label: "Transfer Module",
       link: "/Transfer-voucher",
       icon: LuArrowRightFromLine,
+    },
+    {
+      label: "Barcode Management",
+      link: "/barcode",
+      icon: IoIosBarcode,
     },
   ];
 

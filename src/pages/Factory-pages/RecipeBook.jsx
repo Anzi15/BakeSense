@@ -28,6 +28,8 @@ const ProductTable = ({ readyProducts, onAddNew, loading }) => {
     { label: "Bar Code", key: "barCode" },
   ];
 
+
+
   return (
     <div className="p-4 max-w-5xl mx-auto">
       <div className="flex justify-between items-center mb-4">
@@ -129,17 +131,66 @@ const App = () => {
   const [readyProducts, setReadyProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // useEffect(() => {
+  //   const fetchProducts = async () => {
+  //     try {
+  //       const querySnapshot = await getDocs(collection(db, "readyProducts"));
+  //       const productsList = querySnapshot.docs.map((doc) => ({
+  //         id: doc.id,
+  //         ...doc.data(),
+  //       }));
+  //       setReadyProducts(productsList);
+  //     } catch (error) {
+  //       console.error("Error fetching products: ", error);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+
+  //   fetchProducts();
+  // }, []);
+
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         const querySnapshot = await getDocs(collection(db, "readyProducts"));
-        const productsList = querySnapshot.docs.map((doc) => ({
+        let itemsList = querySnapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
         }));
-        setReadyProducts(productsList);
+
+        const offlineItems =
+          JSON.parse(localStorage.getItem("offlineRecipeBook")) || [];
+        const offlineDeletes =
+          JSON.parse(localStorage.getItem("offlineRecipeBookDeletes")) || [];
+
+        itemsList = itemsList.filter(
+          (item) => !offlineDeletes.includes(item.id)
+        );
+
+        console.log("offlineItems", offlineItems);
+        console.log("itemsList", itemsList);
+      
+        const mergedItems = [...itemsList, ...offlineItems].reduce(
+          (acc, curr) => {
+            acc.set(curr.productCode, curr);
+            return acc;
+          },
+          new Map()
+        );
+
+        console.log("mergedItems", mergedItems);
+
+        setReadyProducts(Array.from(mergedItems.values()));
       } catch (error) {
-        console.error("Error fetching products: ", error);
+        console.error("Error fetching raw items:", error);
+        const offlineItems =
+          JSON.parse(localStorage.getItem("offlineRawItems")) || [];
+        const offlineDeletes =
+          JSON.parse(localStorage.getItem("offlineDeletes")) || [];
+        setReadyProducts(
+          offlineItems.filter((item) => !offlineDeletes.includes(item.id))
+        );
       } finally {
         setLoading(false);
       }

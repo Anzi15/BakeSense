@@ -15,6 +15,7 @@ import RawGoodsInventory from "./pages/Factory-pages/RawGoodsInventory.jsx";
 import RawItems from "./pages/Factory-pages/RawItems.jsx";
 import RecipeBook from "./pages/Factory-pages/RecipeBook.jsx";
 import AddNewRecipeBook from "./pages/Factory-pages/AddNewRecipe.jsx";
+import BarCodePage from "./pages/Factory-pages/BarCodePage.jsx";
 
 const LayoutWrapper = ({ children }) => {
   const location = useLocation();
@@ -44,6 +45,7 @@ const Root = () => {
         <Route path="/items-list" element={user?.role === "factory" ? <RawItems /> : <NoAccessPage />} />
         <Route path="/recipe-book" element={user?.role === "factory" ? <RecipeBook /> : <NoAccessPage />} />
         <Route path="/recipe-book/new" element={user?.role === "factory" ? <AddNewRecipeBook /> : <NoAccessPage />} />
+        <Route path="/barcode" element={user?.role === "factory" ? <BarCodePage /> : <NoAccessPage />} />
       </Routes>
     </LayoutWrapper>
   );

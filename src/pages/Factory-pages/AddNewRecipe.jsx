@@ -50,6 +50,7 @@ const AddNewRecipeBook = () => {
       minimumQuantity: readyProduct.minimumQuantity ?? 0,
       lastUpdated: readyProduct.lastUpdated || new Date().toISOString(),
       ingredients: readyProduct.ingredients || [],
+      barCode: readyProduct.barCode || null
     });
   };
 
