@@ -140,6 +140,7 @@ const DayEntriesPage = () => {
       setLoading(false);
     }
   };
+  
   useEffect(() => {
     fetchAccounts();
     syncOfflineData();

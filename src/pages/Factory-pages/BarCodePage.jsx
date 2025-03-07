@@ -1,26 +1,18 @@
 import React, { useEffect, useRef, useState } from "react";
 import { getDocs, collection } from "firebase/firestore";
 import { db } from "../../helpers/firebase/config"; // Adjust the import path as needed
-import { toPng } from 'html-to-image';
 import Barcode from "react-barcode";
 import html2canvas from "html2canvas";
 
 const BarCodePage = () => {
     const [readyProducts, setReadyProducts] = useState([]);
+    const [filteredProducts, setFilteredProducts] = useState([]);
+    const [searchTerm, setSearchTerm] = useState("");
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [loading, setLoading] = useState(true);
     const divRef = useRef(null);
     const [imageUrl, setImageUrl] = useState(null);
 
-    const handleCapture = async () => {
-        if (divRef.current) {
-          const canvas = await html2canvas(divRef.current, {scale:3});
-          const dataUrl = canvas.toDataURL("image/png");
-          setImageUrl(dataUrl);
-        }
-      };
-
-      handleCapture();
     useEffect(() => {
         const fetchProducts = async () => {
             try {
@@ -30,22 +22,10 @@ const BarCodePage = () => {
                     ...doc.data(),
                 }));
 
-                const offlineItems = JSON.parse(localStorage.getItem("offlineRecipeBook")) || [];
-                const offlineDeletes = JSON.parse(localStorage.getItem("offlineRecipeBookDeletes")) || [];
-
-                itemsList = itemsList.filter((item) => !offlineDeletes.includes(item.id));
-
-                const mergedItems = [...itemsList, ...offlineItems].reduce((acc, curr) => {
-                    acc.set(curr.productCode, curr);
-                    return acc;
-                }, new Map());
-
-                setReadyProducts(Array.from(mergedItems.values()));
+                setReadyProducts(itemsList);
+                setFilteredProducts(itemsList);
             } catch (error) {
                 console.error("Error fetching raw items:", error);
-                const offlineItems = JSON.parse(localStorage.getItem("offlineRawItems")) || [];
-                const offlineDeletes = JSON.parse(localStorage.getItem("offlineDeletes")) || [];
-                setReadyProducts(offlineItems.filter((item) => !offlineDeletes.includes(item.id)));
             } finally {
                 setLoading(false);
             }
@@ -53,6 +33,22 @@ const BarCodePage = () => {
 
         fetchProducts();
     }, []);
+
+    useEffect(() => {
+        const results = readyProducts.filter((product) =>
+            product.productName.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+        setFilteredProducts(results);
+    }, [searchTerm, readyProducts]);
+
+    const handleCapture = async () => {
+        if (divRef.current) {
+            const canvas = await html2canvas(divRef.current, { scale: 3 });
+            const dataUrl = canvas.toDataURL("image/png");
+            setImageUrl(dataUrl);
+        }
+    };
+    handleCapture()
 
     const handlePrint = () => {
         if (imageUrl) {
@@ -63,8 +59,8 @@ const BarCodePage = () => {
                         <title>Print Barcode</title>
                         <style>
                             @page {
-                                size: 2in 1in; /* Set paper size to 2 inches x 1 inch */
-                                margin: 0; /* No margins */
+                                size: 2in 1in;
+                                margin: 0;
                             }
                             body {
                                 margin: 0;
@@ -75,7 +71,6 @@ const BarCodePage = () => {
                             }
                             img {
                                 width: 90%;
-                                // height: 90%;
                                 object-fit: contain;
                             }
                         </style>
@@ -92,22 +87,30 @@ const BarCodePage = () => {
                 </html>
             `);
             printWindow.document.close();
-        } else {
-            console.error("No image available to print.");
         }
     };
-    
 
     return (
         <div className="flex h-screen p-4">
             {/* Left Side: Product List */}
             <div className="w-1/2 bg-gray-100 p-4 overflow-y-auto">
                 <h2 className="text-lg font-bold mb-2">Ready Products</h2>
+                <input
+                    type="text"
+                    placeholder="Search Products..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full p-2 mb-2 border rounded"
+                />
                 {loading ? (
-                    <p>Loading...</p>
+                    <div className="animate-pulse space-y-2">
+                        <div className="h-6 bg-gray-300 rounded"></div>
+                        <div className="h-6 bg-gray-300 rounded"></div>
+                        <div className="h-6 bg-gray-300 rounded"></div>
+                    </div>
                 ) : (
                     <ul>
-                        {readyProducts.map((product) => (
+                        {filteredProducts.map((product) => (
                             <li
                                 key={product.id}
                                 className={`p-2 bg-white rounded-md transition-all duration-400 cursor-pointer border-b ${selectedProduct?.id === product.id ? "bg-blue-200" : "hover:bg-blue-50"}`}
@@ -125,24 +128,20 @@ const BarCodePage = () => {
                 <h1 className="text-2xl font-bold mb-4">Barcode Preview</h1>
                 {selectedProduct ? (
                     <>
-<div
-  id="print-section"
-  className="text-center w-full justify-center border flex flex-col"
-  ref={divRef}
-  style={{ width: "2in", height: "1in" }}
->
-  <p className=" font-semibold text-[10px] pb-2">{selectedProduct.productName}</p>
-  <Barcode value={selectedProduct.barCode} className="max-w-full h-[50%]" />
-  <p className="font-bold  text-[9px]">Rs. {selectedProduct.pricePerUnit}</p>
-</div>
-
-
-      {/* Display captured image */}
-      {imageUrl && <img src={imageUrl} alt="Captured Div" className="mt-2" />}
-      <button onClick={handlePrint} className="mt-4 px-4 py-2 bg-blue-500 text-white rounded">
-    Print Barcode
-</button>
-
+                        <div
+                            id="print-section"
+                            className="text-center w-full justify-center border flex flex-col"
+                            ref={divRef}
+                            style={{ width: "2in", height: "1in" }}
+                        >
+                            <p className="font-semibold text-[10px] pb-2">{selectedProduct.productName}</p>
+                            <Barcode value={selectedProduct.barCode} className="max-w-full h-[50%]" />
+                            <p className="font-bold text-[9px]">Rs. {selectedProduct.pricePerUnit}</p>
+                        </div>
+                        {imageUrl && <img src={imageUrl} alt="Captured Div" className="mt-2" />}
+                        <button onClick={handlePrint} className="mt-4 px-4 py-2 bg-blue-500 text-white rounded">
+                            Print Barcode
+                        </button>
                     </>
                 ) : (
                     <p>Select a product to view its barcode</p>

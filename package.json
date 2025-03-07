@@ -22,6 +22,7 @@
     "react-router-dom": "^7.1.5",
     "react-scripts": "5.0.1",
     "react-to-print": "^3.0.5",
+    "react-toastify": "^11.0.5",
     "recharts": "^2.15.1",
     "sweetalert2": "^11.16.1",
     "tailwind-merge": "^3.0.2",

@@ -47,12 +47,12 @@ const Sidebar = ({ userRole }) => {
     },
     {
       label: "Purchase Module",
-      link: "/receive-voucher",
+      link: "/purchase-module",
       icon: LuArrowLeftFromLine,
     },
     {
       label: "Transfer Module",
-      link: "/Transfer-voucher",
+      link: "/transfer-module",
       icon: LuArrowRightFromLine,
     },
     {
