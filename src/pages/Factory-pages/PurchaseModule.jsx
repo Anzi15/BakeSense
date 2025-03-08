@@ -9,11 +9,13 @@ import {
   updateDoc,
   where,
   query,
+  Timestamp,
 } from "firebase/firestore";
 import { db } from "../../helpers/firebase/config";
 import ItemListModal from "../../components/ItemListModal";
 import Swal from "sweetalert2";
 import { toast } from "react-toastify";
+import { v4 } from "uuid";
 
 const PurchaseModule = () => {
   const [rawItems, setRawItems] = useState([]);
@@ -193,11 +195,12 @@ const PurchaseModule = () => {
         
   
       const newPurchase = {
+        id: v4(),
         date,
         items: selectedItems,
         supplierId: supplier,
-        discounts,
-        tax,
+        discounts: discounts ? discounts : 0,
+        tax: tax ? tax : 0,
         total: totalPurchaseAmount,
       };
   
@@ -218,7 +221,7 @@ const PurchaseModule = () => {
           const lowestPurchasePrice = parseFloat(rawItem.lowestPurchasePrice || item.pricePerUnit);
   
           // ✅ Show Swal for price changes
-          if (item.pricePerUnit > lastPurchasePrice) {
+          if (item.pricePerUnit > lastPurchasePrice && lastPurchasePrice > 0) {
             await Swal.fire({
               icon: "warning",
               title: "Price Increase Alert!",
@@ -241,6 +244,12 @@ const PurchaseModule = () => {
           });
         }
       }
+
+      const [day, month, year] = formattedDate.split("-").map(Number);
+const dateObject = new Date(year, month - 1, day); // Month is 0-based in JS
+
+// Convert to Firestore Timestamp
+const timestamp = Timestamp.fromDate(dateObject);
   
       if (navigator.onLine) {
         const docSnap = await getDoc(docRef);
@@ -252,6 +261,7 @@ const PurchaseModule = () => {
         } else {
           await setDoc(docRef, {
             purchases: [newPurchase],
+            date: timestamp,
           });
         }
   
